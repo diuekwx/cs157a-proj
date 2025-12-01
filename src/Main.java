@@ -1,5 +1,4 @@
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.sql.*;
 import java.util.Properties;
 import java.util.Scanner;
@@ -96,6 +95,7 @@ public class Main {
             Scanner input = new Scanner(System.in);
             if (input.hasNext("[1-6]")){
                 int choice = input.nextInt();
+                input.nextLine();
                 switch (choice) {
                     case 1:
                         break;
@@ -106,6 +106,22 @@ public class Main {
                     case 4:
                         break;
                     case 5:
+                        System.out.println("Please enter the name of the new restaurant: ");
+                        String name = input.nextLine();
+
+                        System.out.println("Please enter the address of the new restaurant: ");
+                        String address = input.nextLine();
+
+                        System.out.println("Please enter the ID of the restaurant's categories seperated by spaces(e.g. 1 2 3 ...): ");
+                        String categoryIDs = input.nextLine();
+
+                        String[] parts = categoryIDs.split(" ");
+                        int[] nums = new int[parts.length];
+                        for (int i = 0; i < nums.length; i++){
+                            nums[i] = Integer.parseInt(parts[i]);
+                        }
+
+                        createRestaurantTransaction(con, name, address, nums);
                         break;
                     case 6:
                         System.out.println("Exiting...");
