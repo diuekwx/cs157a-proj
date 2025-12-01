@@ -2,6 +2,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.*;
 import java.util.Properties;
+import java.util.Scanner;
 
 public class Main {
 
@@ -79,6 +80,48 @@ public class Main {
             return;
         }
         System.out.println("Connected to " + con.getCatalog());
+
+        String menuPrompt = """
+                1. View Data
+                2. Insert Data
+                3. Update Data
+                4. Delete Data
+                5. Run Transaction
+                6. Exit
+                """;
+
+        while(true){
+            System.out.println(menuPrompt);
+            System.out.println("Please enter the # of your desired action: ");
+            Scanner input = new Scanner(System.in);
+            if (input.hasNext("[1-6]")){
+                int choice = input.nextInt();
+                switch (choice) {
+                    case 1:
+                        break;
+                    case 2:
+                        break;
+                    case 3:
+                        break;
+                    case 4:
+                        break;
+                    case 5:
+                        break;
+                    case 6:
+                        System.out.println("Exiting...");
+                        input.close();
+                        con.close();
+                        return;
+                    default:
+                        System.out.println("Invalid choice");
+                }
+            }
+            else{
+                System.out.println("Invalid input");
+                input.nextLine();
+            }
+
+        }
 
 
     }
