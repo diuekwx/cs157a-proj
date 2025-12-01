@@ -6,7 +6,7 @@ import java.util.Properties;
 public class Main {
     private static Connection getConnection(){
         Properties p = new Properties();
-        try (FileInputStream in = new FileInputStream("db.properties")){
+        try (FileInputStream in = new FileInputStream("app.properties")){
             p.load(in);
 
             String url = p.getProperty("url");
