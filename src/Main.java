@@ -167,7 +167,8 @@ public class Main {
             ResultSet rs = ps.executeQuery();
             printResultSet(rs, table);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            System.out.println("A database error occurred while selecting table:");
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
@@ -180,10 +181,29 @@ public class Main {
             PreparedStatement ps = conn.prepareStatement(insertSQL);
             ps.setString(1, name);
             ps.setString(2, email);
-            ps.executeUpdate();
-            System.out.println("New person " + name + " successfully inserted.\n");
-        } catch (SQLException e) {
-            System.out.println(e.getMessage()); //TODO: better error handling
+            int rowsAffected = ps.executeUpdate();
+
+            if (rowsAffected == 0) {
+                System.out.println("Insert failed: no rows were added.");
+            } else {
+                System.out.println("New person " + name + " successfully inserted.\n");
+            }
+
+        }
+
+        catch (SQLIntegrityConstraintViolationException e) {
+            System.out.println("Insert failed due to a data constraint violation.");
+            System.out.println("Reason: " + e.getMessage());
+        }
+
+        catch (SQLSyntaxErrorException e) {
+            System.out.println("SQL syntax error while inserting.");
+            System.out.println("Reason: " + e.getMessage());
+        }
+
+        catch (SQLException e) {
+            System.out.println("A database error occurred while inserting the person:");
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
@@ -200,10 +220,29 @@ public class Main {
             ps.setString(1, name);
             ps.setString(2, email);
             ps.setInt(3, userID);
-            ps.executeUpdate();
-            System.out.println("Person with ID " + userID + " successfully updated.\n");
-        } catch (SQLException e) {
-            System.out.println(e.getMessage()); //TODO: better error handling
+            int rowsAffected = ps.executeUpdate();
+
+            if (rowsAffected == 0) {
+                System.out.println("No record found with UserID: " + userID);
+            } else {
+                System.out.println("Person with ID " + userID + " updated successfully (" + rowsAffected + " row(s) affected).");
+            }
+
+        }
+
+        catch (SQLIntegrityConstraintViolationException e) {
+            System.out.println("Update failed due to a data constraint violation.");
+            System.out.println("Reason: " + e.getMessage());
+        }
+
+        catch (SQLSyntaxErrorException e) {
+            System.out.println("SQL syntax error while updating.");
+            System.out.println("Reason: " + e.getMessage());
+        }
+
+        catch (SQLException e) {
+            System.out.println("A database error occurred while updating the person");
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
@@ -212,12 +251,28 @@ public class Main {
             System.out.println("Enter userID:");
             int userID = scanID(conn, input);
             String insertSQL = "DELETE FROM Person WHERE UserID = ?";
+
             PreparedStatement ps = conn.prepareStatement(insertSQL);
-            ps.setInt(1, userID);
-            ps.executeUpdate();
-            System.out.println("User with ID " + userID + " successfully deleted.\n");
-        } catch (SQLException e) {
-            System.out.println(e.getMessage()); //TODO: better error handling
+            ps.setInt(1, userID); 
+            int rowsAffected = ps.executeUpdate();
+
+            if (rowsAffected == 0) {
+                System.out.println("No record found with UserID: " + userID);
+            } else {
+                System.out.println("Person with ID " + userID + " deleted successfully (" + rowsAffected + " row(s) deleted).");
+            }
+        }
+        catch (SQLIntegrityConstraintViolationException e) {
+            System.out.println("Delete failed due to a data constraint violation.");
+            System.out.println("Reason: " + e.getMessage());
+        }
+        catch (SQLSyntaxErrorException e) {
+            System.out.println("SQL syntax error while trying to delete the person.");
+            System.out.println("Reason: " + e.getMessage());
+        }
+        catch (SQLException e) {
+            System.out.println("A database error occurred while deleting the person.");
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
