@@ -118,3 +118,36 @@ INSERT INTO MenuItem (Name, Price, MenuID) VALUES
 ('Small Sandwich', 8.99, 3);
 
 
+DELIMITER $$
+
+CREATE FUNCTION GetRestaurantAverageRating(restID INT)
+RETURNS DECIMAL(5,2)
+DETERMINISTIC
+BEGIN
+    DECLARE avgRating DECIMAL(5,2);
+
+    SELECT AVG(Rating) INTO avgRating
+    FROM Review
+    WHERE RestaurantID = restID;
+
+    RETURN avgRating;
+END $$
+
+DELIMITER ;
+
+
+
+
+CREATE VIEW RestaurantMenuView AS
+SELECT
+    r.Name,
+    m.MenuID,
+    m.Last_updated,
+    mi.Name AS ItemName,
+    mi.Price
+FROM Menu m
+JOIN Restaurant r ON m.RestaurantID = r.RestaurantID
+JOIN MenuItem mi ON m.MenuID = mi.MenuID;
+
+
+
