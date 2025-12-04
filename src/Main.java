@@ -121,13 +121,32 @@ public class Main {
             System.out.println("Enter an email address:");
             String email = input.nextLine();
 
+            if (name.isEmpty()) {
+                System.out.println("Name cannot be empty.");
+                return;
+            }
+            if (email.isEmpty()) {
+                System.out.println("Email cannot be empty.");
+                return;
+            }
+
             String insertSQL = "INSERT INTO Person (Name, Email) VALUES (?, ?)";
             PreparedStatement ps = conn.prepareStatement(insertSQL);
             ps.setString(1, name);
             ps.setString(2, email);
-            ps.executeUpdate();
+            int rowsAffected = ps.executeUpdate();
+
+            if (rowsAffected == 0) {
+                System.out.println("Insert failed: no rows were added.");
+            } else {
+                System.out.println("Person successfully added.");
+            }
+
         } catch (SQLException e) {
-            System.out.println(e.getMessage()); //TODO: better error handling
+            System.out.println("An error has occured:");
+            System.out.println("Message: " + e.getMessage());
+            System.out.println("SQLState: " + e.getSQLState());
+            System.out.println("ErrorCode: " + e.getErrorCode());
         }
     }
 
@@ -145,9 +164,31 @@ public class Main {
             ps.setString(1, name);
             ps.setString(2, email);
             ps.setString(3, userID);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println(e.getMessage()); //TODO: better error handling
+            int rowsAffected = ps.executeUpdate();
+
+            if (rowsAffected == 0) {
+                System.out.println("No record found with UserID: " + userID);
+            } else {
+                System.out.println("Person updated successfully (" + rowsAffected + " row(s) affected).");
+            }
+
+        }
+
+        catch (SQLIntegrityConstraintViolationException e) {
+            System.out.println("Update failed due to a data constraint violation.");
+            System.out.println("Reason: " + e.getMessage());
+        }
+
+        catch (SQLSyntaxErrorException e) {
+            System.out.println("SQL syntax error while updating record.");
+            System.out.println("Check your SQL statement.");
+        }
+
+        catch (SQLException e) {
+            System.out.println("An error has occured:");
+            System.out.println("Message: " + e.getMessage());
+            System.out.println("SQLState: " + e.getSQLState());
+            System.out.println("ErrorCode: " + e.getErrorCode());
         }
     }
 
@@ -156,11 +197,28 @@ public class Main {
             System.out.println("Enter userID:");
             String userID = input.nextLine();
             String insertSQL = "DELETE FROM Person WHERE UserID = ?";
+            
             PreparedStatement ps = conn.prepareStatement(insertSQL);
             ps.setString(1, userID); // TODO: use proper types (int) instead?
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            System.out.println(e.getMessage()); //TODO: better error handling
+            int rowsDeleted = ps.executeUpdate();
+
+            if (rowsDeleted == 0) {
+                System.out.println("No record found with UserID: " + userID);
+            } else {
+                System.out.println("Person deleted successfully (" + rowsDeleted + " row(s) deleted).");
+            }
+        }
+        catch (SQLIntegrityConstraintViolationException e) {
+            System.out.println("Cannot delete this person due to related records (foreign key constraint).");
+            System.out.println("Reason: " + e.getMessage());
+        }
+        catch (SQLSyntaxErrorException e) {
+            System.out.println("SQL syntax error while trying to delete the person.");
+            System.out.println("Check your SQL statement.");
+        }
+        catch (SQLException e) {
+            System.out.println("A database error occurred while deleting the person.");
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
