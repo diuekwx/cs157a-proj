@@ -53,8 +53,45 @@ public class Main {
         }
     }
 
+    private static boolean isValidUserID(Connection conn, int userID) {
+        String sql = "SELECT 1 FROM Person WHERE UserID = ? LIMIT 1";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userID);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();   // true if a row exists
+            }
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private static int scanID(Connection conn, Scanner scan) {
+        int userID = -1;
+        while (userID < 0) {
+            try {
+                userID = scan.nextInt();
+                scan.nextLine();
+                if (userID < 0) {
+                    System.out.println("ID must be non-negative, try again.");
+                    continue;
+                }
+                if (!isValidUserID(conn, userID)) {
+                    System.out.println("This user does not exist, try again.");
+                    userID = -1;
+                    continue;
+                }
+            } catch (Exception e) {
+                System.out.println("Error: please enter a valid number.");
+                scan.nextLine();
+            }
+        }
+        return userID;
+    }
+
     private static void printResultSet(ResultSet rs, String tableName) throws SQLException {
-        System.out.println("=============== " + tableName +  " ===============");
+        System.out.println("=============== " + tableName +  " ===============\n");
         ResultSetMetaData rsmd = rs.getMetaData();
         int numCols = rsmd.getColumnCount();
         while (rs.next()) {
@@ -68,18 +105,19 @@ public class Main {
 
     private static void selectTable(Connection conn, Scanner input) {
         try {
-            System.out.println("Choose the number of the table to select from (type \"5\" to exit):");
+            System.out.println("\nChoose the number of the table to select from (type \"6\" to exit):");
             String prompt = """
                     1. Restaurant
                     2. RestaurantCategory
                     3. Menu
                     4. Person
-                    5. exit
+                    5. Category
+                    6. Exit
                     """;
             System.out.println(prompt);
             String table = "";
             int choice = 0;
-            while (!input.hasNext("[1-5]")) {
+            while (!input.hasNext("[1-6]")) {
                 System.out.println("Invalid input. Please try again: ");
                 System.out.println(prompt);
                 input.next();
@@ -100,11 +138,20 @@ public class Main {
                     table = "Person";
                     break;
                 case 5:
+                    table = "Category";
+                    break;
+                case 6:
+                    System.out.println();
                     return;
                 default:
                     System.out.println("Invalid choice, returning.");
                     return;
             }
+            /* NOTE: PreparedStatement cannot be used to set table name
+            However, since table name is not set directly by user input,
+            we are safe from SQL injection since table can only take from
+            5 values: "Restaurant", "RestaurantCategory", "Menu", "Person", "Category"
+             */
             String selectSQL = String.format("SELECT * FROM %s", table);
             PreparedStatement ps = conn.prepareStatement(selectSQL);
             ResultSet rs = ps.executeQuery();
@@ -126,6 +173,7 @@ public class Main {
             ps.setString(1, name);
             ps.setString(2, email);
             ps.executeUpdate();
+            System.out.println("New person " + name + " successfully inserted.\n");
         } catch (SQLException e) {
             System.out.println(e.getMessage()); //TODO: better error handling
         }
@@ -134,7 +182,7 @@ public class Main {
     private static void updatePerson(Connection conn, Scanner input) {
         try {
             System.out.println("Enter the UserID:");
-            String userID = input.nextLine();
+            int userID = scanID(conn, input);
             System.out.println("Enter a new name:");
             String name = input.nextLine();
             System.out.println("Enter a new email address:");
@@ -144,8 +192,9 @@ public class Main {
             PreparedStatement ps = conn.prepareStatement(insertSQL);
             ps.setString(1, name);
             ps.setString(2, email);
-            ps.setString(3, userID);
+            ps.setInt(3, userID);
             ps.executeUpdate();
+            System.out.println("Person with ID " + userID + " successfully updated.\n");
         } catch (SQLException e) {
             System.out.println(e.getMessage()); //TODO: better error handling
         }
@@ -154,11 +203,12 @@ public class Main {
     private static void deletePerson(Connection conn, Scanner input) {
         try {
             System.out.println("Enter userID:");
-            String userID = input.nextLine();
+            int userID = scanID(conn, input);
             String insertSQL = "DELETE FROM Person WHERE UserID = ?";
             PreparedStatement ps = conn.prepareStatement(insertSQL);
-            ps.setString(1, userID); // TODO: use proper types (int) instead?
+            ps.setInt(1, userID);
             ps.executeUpdate();
+            System.out.println("User with ID " + userID + " successfully deleted.\n");
         } catch (SQLException e) {
             System.out.println(e.getMessage()); //TODO: better error handling
         }
