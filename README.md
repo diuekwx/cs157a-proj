@@ -15,7 +15,10 @@ mysql -u root -p < sql/create_db.sql
 ```
 mysql -u root -p < sql/create_and_populate.sql
 ```
--Ensure that the app.properties file is properly configured to match user credentials (change user and password)
+-Ensure that the app.properties file is properly configured to match user credentials (change user and password),   -This project assumes the default configurations of the database:
+    -Host: Localhost
+    -Port: 3306
+    -If your MySQL server uses a different host or port, you must also update the url in app.properties
 
 -Ensure a working JDK is installed and added to PATH
 
