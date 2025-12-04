@@ -91,6 +91,15 @@ public class Main {
         return userID;
     }
 
+    private static String scanNonemptyString(Scanner scan, String prompt) {
+        while (true) {
+            System.out.println(prompt);
+            String input = scan.nextLine().trim();
+            if (!input.isEmpty()) return input;
+            System.out.println("Input cannot be blank, please try again.");
+        }
+    }
+
     private static void printResultSet(ResultSet rs, String tableName) throws SQLException {
         System.out.println("=============== " + tableName +  " ===============\n");
         ResultSetMetaData rsmd = rs.getMetaData();
@@ -164,10 +173,8 @@ public class Main {
 
     private static void insertPerson(Connection conn, Scanner input) {
         try {
-            System.out.println("Enter a name:");
-            String name = input.nextLine();
-            System.out.println("Enter an email address:");
-            String email = input.nextLine();
+            String name = scanNonemptyString(input, "Enter a name:");
+            String email = scanNonemptyString(input, "Enter an email address:");
 
             String insertSQL = "INSERT INTO Person (Name, Email) VALUES (?, ?)";
             PreparedStatement ps = conn.prepareStatement(insertSQL);
@@ -184,10 +191,9 @@ public class Main {
         try {
             System.out.println("Enter the UserID:");
             int userID = scanID(conn, input);
-            System.out.println("Enter a new name:");
-            String name = input.nextLine();
-            System.out.println("Enter a new email address:");
-            String email = input.nextLine();
+
+            String name = scanNonemptyString(input, "Enter a new name:");
+            String email = scanNonemptyString(input, "Enter a new email address:");
 
             String insertSQL = "UPDATE Person SET name = ?, email = ? WHERE UserID = ?";
             PreparedStatement ps = conn.prepareStatement(insertSQL);
@@ -272,16 +278,9 @@ public class Main {
                         deletePerson(con, input);
                         break;
                     case 5:
-                        String name = "";
-                        while (name.trim().isEmpty()) {
-                            System.out.println("Please enter the name of the new restaurant: ");
-                            name = input.nextLine();
-                            if (name.trim().isEmpty()) {
-                                System.out.println("Name cannot be empty. Please try again.\n");
-                            }
-                        }
+                        String name = scanNonemptyString(input, "Please enter the name of the new restaurant:");
+                        String address = scanNonemptyString(input, "Please enter the address of the new restaurant:");
 
-                        String address = "";
                         while (address.trim().isEmpty()) {
                             System.out.println("Please enter the address of the new restaurant: ");
                             address = input.nextLine();
