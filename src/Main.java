@@ -243,8 +243,7 @@ public class Main {
                 3. Update Person
                 4. Delete Person
                 5. Run Transaction
-                6. View Data
-                7. Exit
+                6. Exit
                 """;
 
         while (true) {
@@ -286,8 +285,6 @@ public class Main {
                         createRestaurantTransaction(con, name, address, nums);
                         break;
                     case 6:
-                        break;
-                    case 7:
                         System.out.println("Exiting...");
                         input.close();
                         con.close();
