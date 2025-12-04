@@ -110,7 +110,8 @@ public class Main {
             ResultSet rs = ps.executeQuery();
             printResultSet(rs, table);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            System.out.println("A database error occurred while selecting table:");
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
