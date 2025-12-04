@@ -1,8 +1,9 @@
+USE restaurant_review_app;
+
 CREATE TABLE Restaurant (
 RestaurantID INT AUTO_INCREMENT PRIMARY KEY,
 Address VARCHAR(100),
-Name VARCHAR(100)
-);
+Name VARCHAR(100));
 
 CREATE TABLE Person(
 UserID INT AUTO_INCREMENT PRIMARY KEY,
@@ -115,3 +116,5 @@ INSERT INTO MenuItem (Name, Price, MenuID) VALUES
 ('Matcha Milk Tea w/ Boba', 9.99, 2),
 ('Sandwich w/ Pork', 10.49, 3),
 ('Small Sandwich', 8.99, 3);
+
+
