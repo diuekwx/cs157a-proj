@@ -27,7 +27,7 @@ public class Main {
                         throw new SQLException("Creating restaurant failed, no new key");
                     }
                 }
-                System.out.println("Created new restaurant");
+                System.out.printf("Created new restaurant with ID: %d \n", createdRestaurantId);
             }
 
             try (PreparedStatement ps = conn.prepareStatement(insertCategories)) {
@@ -37,16 +37,17 @@ public class Main {
                     ps.addBatch();
                 }
                 ps.executeBatch();
-                System.out.println("Categories added to new restaurant");
+                System.out.println("\nCategories added to new restaurant \n");
             }
 
             try (PreparedStatement ps = conn.prepareStatement(insertMenu)) {
                 ps.setInt(1, createdRestaurantId);
                 ps.executeUpdate();
+                System.out.println("Associated menu for restaurant created \n");
             }
 
             conn.commit();
-            System.out.println("Creation of restaurant and associated categories and menu completed!");
+            System.out.println("Creation of restaurant and associated categories and menu completed! \n");
         } catch (SQLException e) {
             conn.rollback();
             System.out.println("Transaction failed, rolling back: " + e.getMessage());
@@ -273,13 +274,24 @@ public class Main {
                         System.out.println("Please enter the address of the new restaurant: ");
                         String address = input.nextLine();
 
-                        System.out.println("Please enter the ID of the restaurant's categories seperated by spaces(e.g. 1 2 3 ...): ");
-                        String categoryIDs = input.nextLine();
+                        int[] nums = null;
+                        boolean validInput = false;
+                        while (!validInput) {
+                            System.out.println("Please enter the ID of the restaurant's categories seperated by spaces(e.g. 1 2 3 ...): ");
+                            String categoryIDs = input.nextLine();
 
-                        String[] parts = categoryIDs.split(" ");
-                        int[] nums = new int[parts.length];
-                        for (int i = 0; i < nums.length; i++) {
-                            nums[i] = Integer.parseInt(parts[i]);
+                            try {
+                                String[] parts = categoryIDs.split(" ");
+                                nums = new int[parts.length];
+                                for (int i = 0; i < nums.length; i++) {
+                                    nums[i] = Integer.parseInt(parts[i]);
+                                }
+                                validInput = true;
+                            } catch (NumberFormatException e) {
+                                System.out.println();
+                                System.out.println("Invalid category ID format. Please enter only integers separated by spaces.");
+                                System.out.println();
+                            }
                         }
 
                         createRestaurantTransaction(con, name, address, nums);
