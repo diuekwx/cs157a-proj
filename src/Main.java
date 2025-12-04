@@ -226,17 +226,21 @@ public class Main {
             Class.forName("com.mysql.cj.jdbc.Driver");
             return DriverManager.getConnection(url, user, password);
         } catch (Exception e) {
-            System.out.println("Exception: " + e.getClass().getName() + e.getMessage());
+            System.out.println(e);
         }
         return null;
     }
 
     public static void main(String[] args) throws Exception {
-        Connection con = getConnection();
-        if (con == null) {
+        Connection con = null;
+        try{
+            con = getConnection();
+            System.out.println("Connected to " + con.getCatalog());
+        }
+        catch (Exception e){
+            System.out.println("Could not find a connection.");
             return;
         }
-        System.out.println("Connected to " + con.getCatalog());
 
         String menuPrompt = """
                 1. Select Table
@@ -268,12 +272,23 @@ public class Main {
                         deletePerson(con, input);
                         break;
                     case 5:
-                        System.out.println("Please enter the name of the new restaurant: ");
-                        String name = input.nextLine();
+                        String name = "";
+                        while (name.trim().isEmpty()) {
+                            System.out.println("Please enter the name of the new restaurant: ");
+                            name = input.nextLine();
+                            if (name.trim().isEmpty()) {
+                                System.out.println("Name cannot be empty. Please try again.\n");
+                            }
+                        }
 
-                        System.out.println("Please enter the address of the new restaurant: ");
-                        String address = input.nextLine();
-
+                        String address = "";
+                        while (address.trim().isEmpty()) {
+                            System.out.println("Please enter the address of the new restaurant: ");
+                            address = input.nextLine();
+                            if (address.trim().isEmpty()) {
+                                System.out.println("Address cannot be empty. Please try again.\n");
+                            }
+                        }
                         int[] nums = null;
                         boolean validInput = false;
                         while (!validInput) {
