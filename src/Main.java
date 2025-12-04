@@ -142,11 +142,21 @@ public class Main {
                 System.out.println("Person successfully added.");
             }
 
-        } catch (SQLException e) {
-            System.out.println("An error has occured:");
-            System.out.println("Message: " + e.getMessage());
-            System.out.println("SQLState: " + e.getSQLState());
-            System.out.println("ErrorCode: " + e.getErrorCode());
+        }
+
+        catch (SQLIntegrityConstraintViolationException e) {
+            System.out.println("Insert failed due to a data constraint violation.");
+            System.out.println("Reason: " + e.getMessage());
+        }
+
+        catch (SQLSyntaxErrorException e) {
+            System.out.println("SQL syntax error while inserting.");
+            System.out.println("Reason: " + e.getMessage());
+        }
+
+        catch (SQLException e) {
+            System.out.println("A database error occurred while inserting the person:");
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
@@ -180,15 +190,13 @@ public class Main {
         }
 
         catch (SQLSyntaxErrorException e) {
-            System.out.println("SQL syntax error while updating record.");
-            System.out.println("Check your SQL statement.");
+            System.out.println("SQL syntax error while updating.");
+            System.out.println("Reason: " + e.getMessage());
         }
 
         catch (SQLException e) {
-            System.out.println("An error has occured:");
-            System.out.println("Message: " + e.getMessage());
-            System.out.println("SQLState: " + e.getSQLState());
-            System.out.println("ErrorCode: " + e.getErrorCode());
+            System.out.println("A database error occurred while updating the person");
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
@@ -197,24 +205,24 @@ public class Main {
             System.out.println("Enter userID:");
             String userID = input.nextLine();
             String insertSQL = "DELETE FROM Person WHERE UserID = ?";
-            
+
             PreparedStatement ps = conn.prepareStatement(insertSQL);
             ps.setString(1, userID); // TODO: use proper types (int) instead?
-            int rowsDeleted = ps.executeUpdate();
+            int rowsAffected = ps.executeUpdate();
 
-            if (rowsDeleted == 0) {
+            if (rowsAffected == 0) {
                 System.out.println("No record found with UserID: " + userID);
             } else {
-                System.out.println("Person deleted successfully (" + rowsDeleted + " row(s) deleted).");
+                System.out.println("Person deleted successfully (" + rowsAffected + " row(s) deleted).");
             }
         }
         catch (SQLIntegrityConstraintViolationException e) {
-            System.out.println("Cannot delete this person due to related records (foreign key constraint).");
+            System.out.println("Delete failed due to a data constraint violation.");
             System.out.println("Reason: " + e.getMessage());
         }
         catch (SQLSyntaxErrorException e) {
             System.out.println("SQL syntax error while trying to delete the person.");
-            System.out.println("Check your SQL statement.");
+            System.out.println("Reason: " + e.getMessage());
         }
         catch (SQLException e) {
             System.out.println("A database error occurred while deleting the person.");
