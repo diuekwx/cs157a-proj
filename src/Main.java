@@ -27,7 +27,7 @@ public class Main {
                         throw new SQLException("Creating restaurant failed, no new key");
                     }
                 }
-                System.out.println("Created new restaurant");
+                System.out.printf("Created new restaurant with ID: %d \n", createdRestaurantId);
             }
 
             try (PreparedStatement ps = conn.prepareStatement(insertCategories)) {
@@ -37,24 +37,71 @@ public class Main {
                     ps.addBatch();
                 }
                 ps.executeBatch();
-                System.out.println("Categories added to new restaurant");
+                System.out.println("\nCategories added to new restaurant \n");
             }
 
             try (PreparedStatement ps = conn.prepareStatement(insertMenu)) {
                 ps.setInt(1, createdRestaurantId);
                 ps.executeUpdate();
+                System.out.println("Associated menu for restaurant created \n");
             }
 
             conn.commit();
-            System.out.println("Creation of restaurant and associated categories and menu completed!");
+            System.out.println("Creation of restaurant and associated categories and menu completed! \n");
         } catch (SQLException e) {
             conn.rollback();
             System.out.println("Transaction failed, rolling back: " + e.getMessage());
         }
     }
 
+    private static boolean isValidUserID(Connection conn, int userID) {
+        String sql = "SELECT 1 FROM Person WHERE UserID = ? LIMIT 1";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userID);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();   // true if a row exists
+            }
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private static int scanID(Connection conn, Scanner scan) {
+        int userID = -1;
+        while (userID < 0) {
+            try {
+                userID = scan.nextInt();
+                scan.nextLine();
+                if (userID < 0) {
+                    System.out.println("ID must be non-negative, try again.");
+                    continue;
+                }
+                if (!isValidUserID(conn, userID)) {
+                    System.out.println("This user does not exist, try again.");
+                    userID = -1;
+                    continue;
+                }
+            } catch (Exception e) {
+                System.out.println("Error: please enter a valid number.");
+                scan.nextLine();
+            }
+        }
+        return userID;
+    }
+
+    private static String scanNonemptyString(Scanner scan, String prompt) {
+        while (true) {
+            System.out.println(prompt);
+            String input = scan.nextLine().trim();
+            if (!input.isEmpty()) return input;
+            System.out.println("Input cannot be blank, please try again.");
+        }
+    }
+
     private static void printResultSet(ResultSet rs, String tableName) throws SQLException {
-        System.out.println("=============== " + tableName +  " ===============");
+        System.out.println("=============== " + tableName +  " ===============\n");
         ResultSetMetaData rsmd = rs.getMetaData();
         int numCols = rsmd.getColumnCount();
         while (rs.next()) {
@@ -68,18 +115,19 @@ public class Main {
 
     private static void selectTable(Connection conn, Scanner input) {
         try {
-            System.out.println("Choose the number of the table to select from (type \"5\" to exit):");
+            System.out.println("\nChoose the number of the table to select from (type \"6\" to exit):");
             String prompt = """
                     1. Restaurant
                     2. RestaurantCategory
                     3. Menu
                     4. Person
-                    5. exit
+                    5. Category
+                    6. Exit
                     """;
             System.out.println(prompt);
             String table = "";
             int choice = 0;
-            while (!input.hasNext("[1-5]")) {
+            while (!input.hasNext("[1-6]")) {
                 System.out.println("Invalid input. Please try again: ");
                 System.out.println(prompt);
                 input.next();
@@ -100,11 +148,20 @@ public class Main {
                     table = "Person";
                     break;
                 case 5:
+                    table = "Category";
+                    break;
+                case 6:
+                    System.out.println();
                     return;
                 default:
                     System.out.println("Invalid choice, returning.");
                     return;
             }
+            /* NOTE: PreparedStatement cannot be used to set table name
+            However, since table name is not set directly by user input,
+            we are safe from SQL injection since table can only take from
+            5 values: "Restaurant", "RestaurantCategory", "Menu", "Person", "Category"
+             */
             String selectSQL = String.format("SELECT * FROM %s", table);
             PreparedStatement ps = conn.prepareStatement(selectSQL);
             ResultSet rs = ps.executeQuery();
@@ -117,19 +174,8 @@ public class Main {
 
     private static void insertPerson(Connection conn, Scanner input) {
         try {
-            System.out.println("Enter a name:");
-            String name = input.nextLine();
-            System.out.println("Enter an email address:");
-            String email = input.nextLine();
-
-            if (name.isEmpty()) {
-                System.out.println("Name cannot be empty.");
-                return;
-            }
-            if (email.isEmpty()) {
-                System.out.println("Email cannot be empty.");
-                return;
-            }
+            String name = scanNonemptyString(input, "Enter a name:");
+            String email = scanNonemptyString(input, "Enter an email address:");
 
             String insertSQL = "INSERT INTO Person (Name, Email) VALUES (?, ?)";
             PreparedStatement ps = conn.prepareStatement(insertSQL);
@@ -140,7 +186,7 @@ public class Main {
             if (rowsAffected == 0) {
                 System.out.println("Insert failed: no rows were added.");
             } else {
-                System.out.println("Person successfully added.");
+                System.out.println("New person " + name + " successfully inserted.\n");
             }
 
         }
@@ -164,23 +210,22 @@ public class Main {
     private static void updatePerson(Connection conn, Scanner input) {
         try {
             System.out.println("Enter the UserID:");
-            String userID = input.nextLine();
-            System.out.println("Enter a new name:");
-            String name = input.nextLine();
-            System.out.println("Enter a new email address:");
-            String email = input.nextLine();
+            int userID = scanID(conn, input);
+
+            String name = scanNonemptyString(input, "Enter a new name:");
+            String email = scanNonemptyString(input, "Enter a new email address:");
 
             String insertSQL = "UPDATE Person SET name = ?, email = ? WHERE UserID = ?";
             PreparedStatement ps = conn.prepareStatement(insertSQL);
             ps.setString(1, name);
             ps.setString(2, email);
-            ps.setString(3, userID);
+            ps.setInt(3, userID);
             int rowsAffected = ps.executeUpdate();
 
             if (rowsAffected == 0) {
                 System.out.println("No record found with UserID: " + userID);
             } else {
-                System.out.println("Person updated successfully (" + rowsAffected + " row(s) affected).");
+                System.out.println("Person with ID " + userID + " updated successfully (" + rowsAffected + " row(s) affected).");
             }
 
         }
@@ -204,17 +249,17 @@ public class Main {
     private static void deletePerson(Connection conn, Scanner input) {
         try {
             System.out.println("Enter userID:");
-            String userID = input.nextLine();
+            int userID = scanID(conn, input);
             String insertSQL = "DELETE FROM Person WHERE UserID = ?";
 
             PreparedStatement ps = conn.prepareStatement(insertSQL);
-            ps.setString(1, userID); // TODO: use proper types (int) instead?
+            ps.setInt(1, userID); 
             int rowsAffected = ps.executeUpdate();
 
             if (rowsAffected == 0) {
                 System.out.println("No record found with UserID: " + userID);
             } else {
-                System.out.println("Person deleted successfully (" + rowsAffected + " row(s) deleted).");
+                System.out.println("Person with ID " + userID + " deleted successfully (" + rowsAffected + " row(s) deleted).");
             }
         }
         catch (SQLIntegrityConstraintViolationException e) {
@@ -242,17 +287,21 @@ public class Main {
             Class.forName("com.mysql.cj.jdbc.Driver");
             return DriverManager.getConnection(url, user, password);
         } catch (Exception e) {
-            System.out.println("Exception: " + e.getClass().getName() + e.getMessage());
+            System.out.println(e);
         }
         return null;
     }
 
     public static void main(String[] args) throws Exception {
-        Connection con = getConnection();
-        if (con == null) {
+        Connection con = null;
+        try{
+            con = getConnection();
+            System.out.println("Connected to " + con.getCatalog());
+        }
+        catch (Exception e){
+            System.out.println("Could not find a connection.");
             return;
         }
-        System.out.println("Connected to " + con.getCatalog());
 
         String menuPrompt = """
                 1. Select Table
@@ -260,8 +309,7 @@ public class Main {
                 3. Update Person
                 4. Delete Person
                 5. Run Transaction
-                6. View Data
-                7. Exit
+                6. Exit
                 """;
 
         while (true) {
@@ -285,26 +333,39 @@ public class Main {
                         deletePerson(con, input);
                         break;
                     case 5:
-                        System.out.println("Please enter the name of the new restaurant: ");
-                        String name = input.nextLine();
+                        String name = scanNonemptyString(input, "Please enter the name of the new restaurant:");
+                        String address = scanNonemptyString(input, "Please enter the address of the new restaurant:");
 
-                        System.out.println("Please enter the address of the new restaurant: ");
-                        String address = input.nextLine();
+                        while (address.trim().isEmpty()) {
+                            System.out.println("Please enter the address of the new restaurant: ");
+                            address = input.nextLine();
+                            if (address.trim().isEmpty()) {
+                                System.out.println("Address cannot be empty. Please try again.\n");
+                            }
+                        }
+                        int[] nums = null;
+                        boolean validInput = false;
+                        while (!validInput) {
+                            System.out.println("Please enter the ID of the restaurant's categories seperated by spaces(e.g. 1 2 3 ...): ");
+                            String categoryIDs = input.nextLine();
 
-                        System.out.println("Please enter the ID of the restaurant's categories seperated by spaces(e.g. 1 2 3 ...): ");
-                        String categoryIDs = input.nextLine();
-
-                        String[] parts = categoryIDs.split(" ");
-                        int[] nums = new int[parts.length];
-                        for (int i = 0; i < nums.length; i++) {
-                            nums[i] = Integer.parseInt(parts[i]);
+                            try {
+                                String[] parts = categoryIDs.split(" ");
+                                nums = new int[parts.length];
+                                for (int i = 0; i < nums.length; i++) {
+                                    nums[i] = Integer.parseInt(parts[i]);
+                                }
+                                validInput = true;
+                            } catch (NumberFormatException e) {
+                                System.out.println();
+                                System.out.println("Invalid category ID format. Please enter only integers separated by spaces.");
+                                System.out.println();
+                            }
                         }
 
                         createRestaurantTransaction(con, name, address, nums);
                         break;
                     case 6:
-                        break;
-                    case 7:
                         System.out.println("Exiting...");
                         input.close();
                         con.close();
