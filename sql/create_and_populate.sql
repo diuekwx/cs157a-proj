@@ -149,5 +149,13 @@ FROM Menu m
 JOIN Restaurant r ON m.RestaurantID = r.RestaurantID
 JOIN MenuItem mi ON m.MenuID = mi.MenuID;
 
+DELIMITER //
+CREATE TRIGGER menuitem_afterinsert_menu
+AFTER INSERT ON MenuItem
+FOR EACH ROW 
+BEGIN 
+	UPDATE Menu SET Last_updated = NOW()
+	WHERE MenuID = NEW.MenuID;
+END//
 
-
+DELIMITER ;
