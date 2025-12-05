@@ -127,7 +127,7 @@ public class Main {
             System.out.println(prompt);
             String table = "";
             int choice = 0;
-            while (!input.hasNext("[1-6]")) {
+            while (!input.hasNext("[1-7]")) {
                 System.out.println("Invalid input. Please try again: ");
                 System.out.println(prompt);
                 input.next();
@@ -151,6 +151,9 @@ public class Main {
                     table = "Category";
                     break;
                 case 6:
+                    table = "Review";
+                    break;
+                case 7:
                     System.out.println();
                     return;
                 default:
