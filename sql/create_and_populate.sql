@@ -149,6 +149,9 @@ FROM Menu m
 JOIN Restaurant r ON m.RestaurantID = r.RestaurantID
 JOIN MenuItem mi ON m.MenuID = mi.MenuID;
 
+CREATE INDEX idx_restaurantName
+ON Restaurant(Name);
+
 DELIMITER //
 CREATE TRIGGER menuitem_afterinsert_menu
 AFTER INSERT ON MenuItem
