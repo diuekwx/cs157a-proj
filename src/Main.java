@@ -122,7 +122,8 @@ public class Main {
                     3. Menu
                     4. Person
                     5. Category
-                    6. Exit
+                    6. Review
+                    7. Exit
                     """;
             System.out.println(prompt);
             String table = "";

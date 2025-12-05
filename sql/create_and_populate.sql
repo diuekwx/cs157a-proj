@@ -102,6 +102,7 @@ INSERT INTO RestaurantCategory (RestaurantID, CategoryID) VALUES
 
 INSERT INTO Review (Rating, RestaurantID, CustomerID, Comment, Created_at, Updated_at) VALUES
 (5, 1, 4, 'Fantastic food and great service!', '2025-01-10 12:00:00', '2025-01-10 12:00:00'),
+(4, 1, 3, 'Good food and waiter was really nice', '2025-01-11 12:00:00', '2025-01-11 12:00:00'),
 (4, 2, 1, 'Loved the seafood platter.', '2025-02-05 18:30:00', '2025-02-05 18:30:00'),
 (3, 3, 2, 'Decent burgers, nice view.', '2025-03-15 13:45:00', '2025-03-15 13:45:00');
 INSERT INTO Menu (Last_updated, RestaurantID) VALUES
